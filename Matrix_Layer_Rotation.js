@@ -1,5 +1,5 @@
 function processData(input) {
-	var input = input || "8 6 1\n1 2 3 4 1 2\n5 6 7 8 5 6\n9 0 1 9 0 2\n3 4 5 3 4 6\n7 8 9 7 8 0\n1 2 3 4 1 2\n5 6 7 8 5 6\n9 0 1 9 0 2";
+	var input = input || "4 5 3\n1 2 3 4 1\n5 6 7 8 5\n9 0 1 9 0\n3 4 5 3 4";
 	var defaultArray = input.split('\n');
 
 	var mainArray = defaultArray.splice(0,1);
@@ -16,12 +16,7 @@ function processData(input) {
 		var M = M;
 		var N = N;
 		var R = R;
-
-		// Inicializando una matriz vacía
-		var matrizVacia = new Array(M);
-		for (var i = 0; i < matrizVacia.length; i++) {
-			matrizVacia[i] = new Array(N);
-		}
+		var matrizResultado;
 
 		// Construyendo la matriz de entrada
 		var matrizInicial = new Array(M);
@@ -31,38 +26,66 @@ function processData(input) {
 			for (var j = 0; j < temp.length; j++) {
 				matrizInicial[i][j] = parseInt(temp[j]);
 			}
+		}		
+
+		var fn = {};
+
+		fn.getMatrixString = function () {
+			var st = '';
+			for (var i = 0; i < matrizResultado.length; i++) {
+				var temp = matrizResultado[i].join('\t') + '\n';
+				st = st + temp;
+			}
+			return st;
 		}
 
-		var init = {};
-
-		init.rotatePosition = function () {
-
+		fn.generatedMatrixResultado = function () {
+			matrizResultado = fn.rotateMatrix();
 		}
 
-		init.rotateVertical = function () {
-			var numberOfRings = (init.getMinDimention())/2; // returna el valor del numero de columnas
-			                                				// por ser menor, girara verticalmente
-			for (var index = 0; index < numberOfRings; index++) {
-				for (var i = 0; i < matrizInicial.length; i++) {
-					for (var j = 0; j < matrizInicial[i].length; j++) {
-						if ( i==(0+index) && ( j>(0+index) && j<(matrizInicial[i].length-index) ) ) {
-							matrizVacia[i][j-1] = matrizInicial[i][j];
+		fn.rotateMatrix = function () {
+			var mt = matrizInicial;
+			for (var m = 0; m < R; m++) {
+				mt = fn.rotateMatrixOne(mt);
+			}
+			return mt;
+		}
+
+		fn.rotateMatrixOne = function (/*matriz inicial*/mi) {
+			var rings = (fn.getMinDimention())/2;
+			var mf = fn.generatedMatrixVacia(); /*matriz final - después de la rotación*/
+
+			for (var index = 0; index < rings; index++) {
+				for (var i = 0; i < mi.length; i++) {
+					for (var j = 0; j < mi[i].length; j++) {
+						if ( i==(0+index) && ( j>(0+index) && j<(mi[i].length-index) ) ) {
+							mf[i][j-1] = mi[i][j];
 						}
-						if ( i==(M-1-index) && ( j>=(0+index) && j<(matrizInicial[i].length-index-1) ) ) {
-							matrizVacia[i][j+1] = matrizInicial[i][j];
+						if ( i==(M-1-index) && ( j>=(0+index) && j<(mi[i].length-index-1) ) ) {
+							mf[i][j+1] = mi[i][j];
 						}
-						if ( j==(0+index) && ( i>=(0+index) && i<(matrizInicial.length-index-1) ) ) {
-							matrizVacia[i+1][j] = matrizInicial[i][j];
+						if ( j==(0+index) && ( i>=(0+index) && i<(mi.length-index-1) ) ) {
+							mf[i+1][j] = mi[i][j];
 						}
-						if ( j==(N-1-index) && ( i>(0+index) && i<(matrizInicial.length-index) ) ) {
-							matrizVacia[i-1][j] = matrizInicial[i][j];
+						if ( j==(N-1-index) && ( i>(0+index) && i<(mi.length-index) ) ) {
+							mf[i-1][j] = mi[i][j];
 						}
 					}
 				}
 			}
+			return mf;
 		}
 
-		init.getMinDimention = function () {
+		fn.generatedMatrixVacia = function () {
+			// Inicializando una matriz vacía
+			var mv = new Array(M);
+			for (var i = 0; i < mv.length; i++) {
+				mv[i] = new Array(N);
+			}
+			return mv;
+		}
+
+		fn.getMinDimention = function () {
 			if ( M <= N ) {
 				return M;
 			} else {
@@ -70,22 +93,20 @@ function processData(input) {
 			}
 		}
 
-		init.getMatrizVacia = function () {
-			return matrizVacia;
-		}
-
-		init.getMatrizInicial = function () {
+		fn.getMatrizInicial = function () {
 			return matrizInicial;
 		}
 
-		return init;		
+		fn.getMatrizResultado = function () {
+			return matrizResultado;
+		}
+
+		return fn;		
 	}
 
 	var matrix = new RotationMain(M, N, R, contentArray);
-	matrix.rotateVertical();
-	console.log(matrix.getMatrizVacia());
-	console.log("");
-	console.log(matrix.getMatrizInicial());
+	matrix.generatedMatrixResultado();	
+	console.log(matrix.getMatrixString());
 }
 
 processData();
