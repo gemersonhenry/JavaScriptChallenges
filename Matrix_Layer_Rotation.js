@@ -1,5 +1,5 @@
 function processData(input) {
-	var input = input || "4 5 3\n1 2 3 4 1\n5 6 7 8 5\n9 0 1 9 0\n3 4 5 3 4";
+	var input = input || "4 5 999999999\n1 2 3 4 1\n5 6 7 8 5\n9 0 1 9 0\n3 4 5 3 4";
 	var defaultArray = input.split('\n');
 
 	var mainArray = defaultArray.splice(0,1);
@@ -33,7 +33,7 @@ function processData(input) {
 		fn.getMatrixString = function () {
 			var st = '';
 			for (var i = 0; i < matrizResultado.length; i++) {
-				var temp = matrizResultado[i].join('\t') + '\n';
+				var temp = matrizResultado[i].join(' ') + '\n';
 				st = st + temp;
 			}
 			return st;
@@ -44,30 +44,30 @@ function processData(input) {
 		}
 
 		fn.rotateMatrix = function () {
+			var rings = (fn.getMinDimention())/2;
+			fn.calculateNumberRotate();
 			var mt = matrizInicial;
 			for (var m = 0; m < R; m++) {
-				mt = fn.rotateMatrixOne(mt);
+				mt = fn.rotateMatrixOne(mt, rings);
 			}
 			return mt;
 		}
 
-		fn.rotateMatrixOne = function (/*matriz inicial*/mi) {
-			var rings = (fn.getMinDimention())/2;
+		fn.rotateMatrixOne = function (/*matriz inicial*/mi, rings) {			
 			var mf = fn.generatedMatrixVacia(); /*matriz final - después de la rotación*/
 
-			for (var index = 0; index < rings; index++) {
-				for (var i = 0; i < mi.length; i++) {
-					for (var j = 0; j < mi[i].length; j++) {
-						if ( i==(0+index) && ( j>(0+index) && j<(mi[i].length-index) ) ) {
+			for (var kr = 0; kr < rings; kr++) {
+				var nkr = N - kr;
+				var mkr = M - kr;
+				for (var i = 0; i < M; i++) {
+					for (var j = 0; j < N; j++) {
+						if ( i == kr && ( j > kr && j < nkr ) ) {
 							mf[i][j-1] = mi[i][j];
-						}
-						if ( i==(M-1-index) && ( j>=(0+index) && j<(mi[i].length-index-1) ) ) {
+						} else if ( i == ( mkr-1 ) && ( j >= kr && j < (nkr-1) ) ) {
 							mf[i][j+1] = mi[i][j];
-						}
-						if ( j==(0+index) && ( i>=(0+index) && i<(mi.length-index-1) ) ) {
+						} else if ( j == kr && ( i >= kr && i < (mkr-1) ) ) {
 							mf[i+1][j] = mi[i][j];
-						}
-						if ( j==(N-1-index) && ( i>(0+index) && i<(mi.length-index) ) ) {
+						} else if ( j == (nkr-1) && ( i > kr && i < mkr ) ) {
 							mf[i-1][j] = mi[i][j];
 						}
 					}
@@ -101,6 +101,49 @@ function processData(input) {
 			return matrizResultado;
 		}
 
+		fn.calculateNumberRotate = function () {
+			var mcm = fn.mcmTotal();
+			if ( R > mcm ) {
+				R = R%mcm;
+			}
+		}
+
+		// agregando funciones auxiliares
+		fn.mcmTotal = function () {
+			var vuelta = (2*(M+N)-4);
+			var rings = (fn.getMinDimention())/2;
+			var mcm_total;
+			if ( rings > 1 ) {
+				var a = vuelta;
+				var b = vuelta - 8;
+				for (var i = 0; i < (rings-1); i++) {
+					mcm_total = fn.calculateMCM(a, b);
+					b = vuelta - (8*i);
+					a = mcm_total;
+				}
+			}
+			return mcm_total;
+		}
+
+		fn.calculateMCM = function (a, b) {
+			var mcd = fn.calculateMCD(a, b);
+			return (a*b)/mcd;
+		}
+
+		fn.calculateMCD = function (m, n) {
+			var restoTemp = fn.getRestoDeDivision(m, n);
+			if ( restoTemp === 0 ) {
+				return n
+			} else {
+				return fn.calculateMCD(n, restoTemp)
+			}
+		}
+
+		fn.getRestoDeDivision = function (m, n) {
+			var resto = ( m - Math.floor(m/n)*n );
+			return resto;
+		}
+
 		return fn;		
 	}
 
@@ -109,4 +152,6 @@ function processData(input) {
 	console.log(matrix.getMatrixString());
 }
 
+console.time('Test performance');
 processData();
+console.timeEnd('Test performance');
