@@ -1,0 +1,21 @@
+{
+  "name": "JavaScriptChallenges",
+  "version": "1.0.0",
+  "description": "Solutions of Hackerrank.com",
+  "main": "medium-Extra_Long_Factorials.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gemersonhenry/JavaScriptChallenges.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gemersonhenry/JavaScriptChallenges/issues"
+  },
+  "homepage": "https://github.com/gemersonhenry/JavaScriptChallenges#readme",
+  "dependencies": {}
+}
