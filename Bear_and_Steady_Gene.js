@@ -57,7 +57,7 @@ function processData(input) {
     		return count;
     	}
     	fn.getMinAccumulated = function (num_A, num_C, num_G, num_T) {    		
-    		var m = num_A;
+    		var m = num_A, M = num_A;
     		if ( num_C < m ) {
     			m = num_C;
     		} else if ( num_G < m ) {
@@ -65,7 +65,15 @@ function processData(input) {
     		} else if ( num_T < m ) {
     			m = num_T;
     		}
-    		return { A:(num_A-m), C:(num_C-m), G:(num_G-m), T:(num_T-m), MIN:(m*4) };
+
+    		if ( num_C > M ) {
+    			M = num_C;
+    		} else if ( num_G > M ) {
+    			M = num_G;
+    		} else if ( num_T > M ) {
+    			M = num_T;
+    		}
+    		return { A:(num_A-m), C:(num_C-m), G:(num_G-m), T:(num_T-m), MIN:(m*4), MAX:M };
     	}
 
     	return fn;
