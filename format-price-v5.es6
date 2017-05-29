@@ -42,11 +42,17 @@ yOSON.AppCore.addModule("range-format", function (Sb) {
 
 	fn.formatNumberInput = () => {
 		let _inputNumber = $(st.inputActivateFocus).val();
-		let _inputTemporal = _inputNumber;
+		let _inputTemporal = _inputNumber; // elemento auxiliar para trabajar el focus
 		if ( inputTemporal !== _inputNumber ) {
-			inputTemporal = _inputNumber; 
+			let _inputFocus = document.getElementById(INPUTFOCUS);
+			let _focus = _inputFocus.selectionStart;
+			inputTemporal = _inputNumber;
 			_inputNumber = fn.formatNumber(_inputNumber);
 			$(st.inputActivateFocus).val(_inputNumber);
+
+			// seteando la posición del focus
+			let addNumberCharacter = fn.characterEspecial(_inputTemporal, _inputNumber);
+			_inputFocus.setSelectionRange(_focus+addNumberCharacter, _focus+addNumberCharacter)
 			//log(_inputNumber);
 		}
 	}
@@ -129,40 +135,19 @@ yOSON.AppCore.addModule("range-format", function (Sb) {
 		return _input.selectionStart;
 	}
 
-
-	/**
-	 * Agregando validación de posición de focus
-	 */
-	
-	fn.modifiedLength = ( _init, _fin ) => {
-		let _length = (_init.length > _fin.length) ? _fin.length : _init.length;
-		let _initArr = _init.split('').reverse();
-		let _finArr = _fin.split('').reverse();
-		for (var i = 0; i < _length.length; i++) 
-		{
-			if ( _initArr[i] !== _finArr[i] )
-				return (i+1);
-		}
-		return _length;
+	fn.characterEspecial = (_init, _fin) => {
+		let _n_init = fn.numberCharacter(_init);
+		let _n_fin = fn.numberCharacter(_fin);
+		return (_n_fin - _n_init);
 	}
 
-	fn.positionFocusInput = ( _init, _fin ) => { /* número inicial, número final */
-		if ( _init !== _fin ) 
-		{
-			let _init = fn.rebuildNumber(_init);
-			let _fin = fn.rebuildNumber(_fin);
-
-			let regexp_init = new RegExp("^"+_init);
-			if ( regexp_init.test(_fin) )
-				return _fin.length;
-
-			let regexp_fin = new RegExp(_fin+"$");
-			if ( regexp_fin.test(_init) )
-				return (_fin.length - _init.length);
-
-			let r = fn.modifiedLength(_init, _fin);
-			return (_fin.length - r);
+	fn.numberCharacter = (_value) => {
+		let _n = 0;
+		for (var i = 0; i < _value.length; i++) {
+			if ( _value[i] === ',' )
+				_n++;
 		}
+		return _n;
 	}
 
 	initialize = () => {

@@ -43,6 +43,38 @@ fn.formatNumber = ( numberDOM, numberFormat ) => {
 	return _numberDOM;
 }
 
+
+fn.triggerRebuildNumberOnlyWithDigits = (param, cb) => {
+	let min = fn.rebuildNumberOnlyWithDigits(param.min);
+	let max = fn.rebuildNumberOnlyWithDigits(param.max);
+	let arg = {
+		min:min,
+		max:max
+	};
+	cb(arg);
+}
+
+fn.rebuildNumberOnlyWithDigits = ( dirtyNumber ) => {
+	// si la entrada es string vacío entonces devuelve lo mismo
+	if ( dirtyNumber === "" ) {
+		return "";
+	}
+
+	// entrada de un string que tiene dígitos y otros caracteres	
+	let regexp = new RegExp("[0-9]");
+	let arrayDirtyNumber  = dirtyNumber .split("");
+	let arrayDirtyNumberLength = arrayDirtyNumber.length;
+	// luego de verificar que el string no sea vacío
+	for ( let i = (arrayDirtyNumberLength-1); i >= 0 ; i-- ) {
+		if ( !regexp.test( arrayDirtyNumber.slice(i,i+1).join("") ) ) {
+			arrayDirtyNumber.splice(i,1);
+		}
+	}
+
+	// salida de un string que tiene sólo dígitos
+	return arrayDirtyNumber.join("");
+}
+
 fn.getEspecialCharactersArray = ( numberFormat ) => {
 	let regexp = new RegExp("[0-9]");
 	let numberFormatArray = numberFormat.split("");
@@ -65,25 +97,67 @@ fn.getEspecialCharactersArray = ( numberFormat ) => {
 	return especialCharactersArray;
 }
 
-fn.rebuildNumberOnlyWithDigits = ( dirtyNumber ) => {
-	// si la entrada es string vacío entonces devuelve lo mismo
-	if ( dirtyNumber === "" ) {
-		return "";
-	}
+fn.getDiffOfEspecialCharacters = ( valueBeforeAction, valueAfterAction ) => {
+	// aquí ingresan los valores ya formateados
+	let _n_valueBeforeAction = fn.getNumberOfEspecialCharacters(valueBeforeAction);
+	let _n_valueAfterAction = fn.getNumberOfEspecialCharacters(valueAfterAction);
+	// valor positivo o negativo, dependiente del caso
+	return (_n_valueAfterAction - _n_valueBeforeAction); 
+}
 
-	// entrada de un string que tiene dígitos y otros caracteres	
-	let regexp = new RegExp("[0-9]");
-	let arrayDirtyNumber  = dirtyNumber .split("");
-	let arrayDirtyNumberLength = arrayDirtyNumber.length;
-	// luego de verificar que el string no sea vacío
-	for ( let i = (arrayDirtyNumberLength-1); i >= 0 ; i-- ) {
-		if ( !regexp.test( arrayDirtyNumber.slice(i,i+1).join("") ) ) {
-			arrayDirtyNumber.splice(i,1);
+fn.getNumberOfEspecialCharacters = ( numberWithEspecialCharacters ) => {
+	// esta función se aplica cuando el número ya fue formateado y sólo
+	// tiene los caracteres especiales del formato
+	let _numberOfEspecialCharacters = 0;
+	let _numberWithEspecialCharactersArray = numberWithEspecialCharacters.split("");
+	let _regexp = new RegExp("[0-9]");
+	for (var i = 0; i < _numberWithEspecialCharactersArray.length; i++) {
+		if ( !_regexp.test( _numberWithEspecialCharactersArray.slice(i,i+1).join("") ) ) {
+			_numberOfEspecialCharacters++;
 		}
 	}
+	return _numberOfEspecialCharacters;
+}
 
-	// salida de un string que tiene sólo dígitos
-	return arrayDirtyNumber.join("");
+fn.getValueOfInputException = ( inputBefore, focusInputBefore, inputAfter, focusInputAfter ) => {
+	// cuando el input está vacío "inputBefore" está inicializado con ""
+	if ( inputBefore === "" ) {
+		return inputAfter;
+	}
+
+	// los valores de los input incluyen los caracteres especiales
+	let _valueBefore = inputBefore.split('');
+	let _focusValueBefore = focusInputBefore;
+	let _valueAfter = inputAfter.split('');
+	let _focusValueAfter = focusInputAfter;
+	let _regexp = new RegExp("[0-9]");
+
+	//console.log( _valueBefore, _focusValueBefore, _valueAfter, _focusValueAfter );
+	// la función se ejecuta cuango el tamaño del número disminuye
+	if ( _valueBefore.length > _valueAfter.length ) {
+		if ( _focusValueBefore === _focusValueAfter ) {
+			// la condición indica que se pulso la tecla "suprimir/delete"
+			for (let i = 0; i < _valueAfter.length; i++) {
+				if ( _valueAfter[i] !== _valueBefore[i] && 
+						!_regexp.test(_valueBefore.slice(i,i+1).join("")) ) {
+					_valueAfter.splice( i, 1 );
+					// _valueBefore.splice( i+1, 1 );
+					break;
+				}
+			}
+		} else {
+			// caso contrario se pulso la tecla "backspace/retroceder"
+			for (let i = 0; i < _valueAfter.length; i++) {
+				if ( _valueAfter[i] !== _valueBefore[i] && 
+						!_regexp.test(_valueBefore.slice(i,i+1).join("")) ) {
+					_valueAfter.splice( i-1, 1 );
+					// _valueBefore.splice( i-1, 1 );
+					break;
+				}
+			}
+		}
+	}
+	return _valueAfter;
 }
 
 fn.addEspecialCharacterPosition = ( number, especialCharacter, position ) => {
@@ -126,61 +200,8 @@ fn.convertToString = ( value ) => {
 	return `${value}`;
 }
 
-/**
- * seteando la posición del cursor dentro del input
- */
-
-fn.getDiffOfEspecialCharacters = ( valueBeforeAction, valueAfterAction ) => {
-	// aquí ingresan los valores ya formateados
-	let _n_valueBeforeAction = fn.getNumberOfEspecialCharacters(valueBeforeAction);
-	let _n_valueAfterAction = fn.getNumberOfEspecialCharacters(valueAfterAction);
-	// valor positivo o negativo, dependiente del caso
-	return (_n_valueAfterAction - _n_valueBeforeAction); 
-}
-
-fn.getNumberOfEspecialCharacters = ( numberWithEspecialCharacters ) => {
-	// esta función se aplica cuando el número ya fue formateado y sólo
-	// tiene los caracteres especiales del formato
-	let _numberOfEspecialCharacters = 0;
-	let _regexp = new RegExp("[0-9]");
-	for (var i = 0; i < numberWithEspecialCharacters.length; i++) {
-		if ( !_regexp.test(numberWithEspecialCharacters.slice(i,i+1).join("")) )
-			_numberOfEspecialCharacters++;
-	}
-	return _numberOfEspecialCharacters;
-}
-
-fn.getValueOfInputException = ( inputBeforeAction, inputAfterAction ) => {
-	// los valores de los input incluyen los caracteres especiales
-	let _valueBefore = inputBeforeAction.value;
-	let _focusValueBefore = inputBeforeAction.selectionStart;
-	let _valueAfter = inputAfterAction.value;
-	let _focusValueAfter = inputAfterAction.selectionStart;
-	let _regexp = new RegExp("[0-9]");
-
-	// la función se ejecuta cuango el tamaño del número disminuye
-	if ( _valueBefore.length > _valueAfter.length ) {
-		if ( _focusValueBefore === _focusValueAfter ) {
-			// la condición indica que se pulso la tecla "suprimir/delete"
-			for (let i = 0; i < _valueAfter.length; i++) {
-				if ( _valueAfter[i] !== _valueBefore[i] && !_regexp.test(_valueBefore.slice(i,i+1).join("")) ) {
-					_valueAfter.splice( i, 1 );
-					// _valueBefore.splice( i+1, 1 );
-					break;
-				}
-			}
-		} else {
-			// caso contrario se pulso la tecla "backspace/retroceder"
-			for (let i = 0; i < _valueAfter.length; i++) {
-				if ( _valueAfter[i] !== _valueBefore[i] && !_regexp.test(_valueBefore.slice(i,i+1).join("")) ) {
-					_valueAfter.splice( i-1, 1 );
-					// _valueBefore.splice( i-1, 1 );
-					break;
-				}
-			}
-		}
-	}
-
+fn.getDomId = ( id ) => {
+	return document.getElementById(id);
 }
 
 
